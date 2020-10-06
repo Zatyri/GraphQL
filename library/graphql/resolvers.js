@@ -36,25 +36,37 @@ const resolvers = {
             try {
                 return book.save()
             } catch (error) {
-                console.log(error.message);
-                
-                
+                throw new UserInputError(error.message, {
+                    invalidArgs: args,
+                  })
             }
             
         },
         addAuthor: (root, args) => {
-            const author = new Author({...args})          
-            return author.save()
+            try {
+                const author = new Author({...args})          
+                return author.save()
+            } catch (error) {
+                throw new UserInputError(error.message, {
+                    invalidArgs: args,
+                  })
+            }
         },
         
         editAuthor: async (root, args) => {
-            const author = await Author.findOne({name: args.name})
-            if(!author){
-                return null
+            try {
+                const author = await Author.findOne({name: args.name})
+                if(!author){
+                    return null
+                }
+                author.born = args.setBornTo
+                author.save()
+                return author
+            } catch (error) {
+                console.log(error.message);
+                
             }
-            author.born = args.setBornTo
-            author.save()
-            return author
+ 
         }
     }
   }
