@@ -1,10 +1,13 @@
 require('dotenv').config()
-const { ApolloServer} = require('apollo-server')
+const { ApolloServer, UserInputError} = require('apollo-server')
+const jwt = require('jsonwebtoken')
 const mongoose = require('mongoose')
 const resolvers = require('./graphql/resolvers')
 const typeDefs = require('./graphql/typeDefs')
+const User = require('./models/user')
 
 const URI = process.env.MONGODB_URI
+const JWT_SECRET = process.env.JWT_SECRET
 
 console.log(`Connecting to ${URI}`);
 
@@ -23,6 +26,17 @@ console.log(`Connecting to ${URI}`);
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  context: async ({req}) => {
+    const auth = req ? req.headers.authorization : null
+    if(auth && auth.toLocaleLowerCase().startsWith('bearer ')){
+      const decodedToken = jwt.verify(
+        auth.substring(7), JWT_SECRET
+      )
+      const currentUser = await User
+      .findById(decodedToken.id)
+      return {currentUser}
+    }
+  }
 })
 
 server.listen().then(({ url }) => {

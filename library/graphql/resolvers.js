@@ -1,5 +1,10 @@
+require('dotenv').config()
+const jwt = require('jsonwebtoken')
 const Book = require('../models/book')
 const Author = require('../models/author')
+const User = require('../models/user')
+
+const JWT_SECRET = process.env.JWT_SECRET
 
 const resolvers = {
     Query: {
@@ -23,8 +28,15 @@ const resolvers = {
             return count
         }
     },
+    me: (root, args, context) => {
+        return context.currentUser
+    },
     Mutation: {
-        addBook: async (root, args) => {
+        addBook: async (root, args, {currentUser}) => {
+            try {                
+            if(!currentUser){
+                throw new AuthenticationError("not authenticated")
+            }
             const author = await Author.findOne({name: args.author})
             if(!author){
                 const newAuthor = new Author({
@@ -33,9 +45,11 @@ const resolvers = {
                 newAuthor.save()
             }
             const book = new Book({...args, author: author})
-            try {
+            
                 return book.save()
             } catch (error) {
+                console.log(error.message);
+                
                 throw new UserInputError(error.message, {
                     invalidArgs: args,
                   })
@@ -44,6 +58,7 @@ const resolvers = {
         },
         addAuthor: (root, args) => {
             try {
+      
                 const author = new Author({...args})          
                 return author.save()
             } catch (error) {
@@ -51,10 +66,12 @@ const resolvers = {
                     invalidArgs: args,
                   })
             }
-        },
-        
-        editAuthor: async (root, args) => {
+        },        
+        editAuthor: async (root, args, {currentUser}) => {
             try {
+                if(!currentUser){
+                    throw new AuthenticationError("not authenticated")
+                }
                 const author = await Author.findOne({name: args.name})
                 if(!author){
                     return null
@@ -66,7 +83,38 @@ const resolvers = {
                 console.log(error.message);
                 
             }
- 
+        },
+        createUser: (root, args) => {
+            const user = new User({username: args.username})
+            try {
+                user.save()
+                return user
+            } catch (error) {
+                throw new UserInputError(error.message, {
+                    invalidArgs: args,
+                  })
+
+            }
+        },
+        login: async (root,args) => {
+            try {
+                const user = await User.findOne({username: args.username})
+                
+                if(!user || args.password !== 'notSecure'){
+                    throw new UserInputError("wrong credentials")
+                }
+
+                const userToken = {
+                    username: user.username,
+                    id: user._id
+                }
+
+                return {value: jwt.sign(userToken, JWT_SECRET)}
+            } catch (error) {
+                console.log(`Error: ${error.message}`);
+                
+            }
+
         }
     }
   }
