@@ -10,7 +10,7 @@ const Authors = ({authors}) => {
 
   useEffect(()=> {
     setAuthorsState(authors)
-  },[])
+  },[authors])
 
  const updateAuthor = async (name, born) => {
   await editAuthor({variables: {name, born}})
