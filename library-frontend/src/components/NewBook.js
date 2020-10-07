@@ -11,10 +11,6 @@ const NewBook = (props) => {
 
   const [ createBook ] = useMutation(ADD_BOOK)
 
-  if (!props.show) {
-    return null
-  }
-
   const submit = async (event) => {
     event.preventDefault()
     createBook({variables: {title, author, published, genres}})

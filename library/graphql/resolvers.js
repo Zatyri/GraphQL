@@ -11,14 +11,11 @@ const resolvers = {
         bookCount: () => Book.collection.countDocuments(),
         authorCount: () => Author.collection.countDocuments(),
         allBooks: (root, args) => {
-          let booksToReturn = Book.find({})
-          if(args.hasOwnProperty('author')){
-          booksToReturn = booksToReturn.filter(book => book.author === args.author)
-          }
-          if(args.hasOwnProperty('genre')){             
-          booksToReturn = booksToReturn.filter(book => book.genres.includes(args.genre)) 
-          }
-          return booksToReturn
+          let books = Book.find({}).populate('author')
+            
+            
+     
+          return books
       },
         allAuthors: () => Author.find({})
     },
@@ -40,13 +37,19 @@ const resolvers = {
             const author = await Author.findOne({name: args.author})
             if(!author){
                 const newAuthor = new Author({
-                    name: args.name
+                    name: args.author
                 })
-                newAuthor.save()
-            }
-            const book = new Book({...args, author: author})
-            
+                const addedAuthor = await newAuthor.save()
+                const book = new Book({...args, author: addedAuthor})
+                console.log(`new author ${book}`);
+                
                 return book.save()
+            } else {
+                const book = new Book({...args, author: author})   
+                console.log(book);
+                         
+                return book.save()
+            }
             } catch (error) {
                 console.log(error.message);
                 
