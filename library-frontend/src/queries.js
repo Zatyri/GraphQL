@@ -15,6 +15,7 @@ export const ALL_BOOKS = gql`
         allBooks {
             title,            
             published,
+            genres
             author {
                 name
             }
@@ -54,5 +55,13 @@ export const LOGIN = gql`
     login(username: $username, password: $password)  {
       value
     }
+  }
+`
+export const ME = gql`
+  query{
+      me {
+          username
+          favoriteGenre
+      }
   }
 `

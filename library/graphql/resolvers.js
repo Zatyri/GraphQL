@@ -12,21 +12,18 @@ const resolvers = {
         authorCount: () => Author.collection.countDocuments(),
         allBooks: (root, args) => {
           let books = Book.find({}).populate('author')
-            
-            
-     
           return books
       },
-        allAuthors: () => Author.find({})
+        allAuthors: () => Author.find({}),
+        me: (root, args, context) => {                 
+            return context.currentUser
+        }
     },
     Author: {
         bookCount: (root) => {
             const count = Book.countDocuments({author: {$in: root._id}})
             return count
         }
-    },
-    me: (root, args, context) => {
-        return context.currentUser
     },
     Mutation: {
         addBook: async (root, args, {currentUser}) => {

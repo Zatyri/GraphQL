@@ -8,9 +8,7 @@ const LoginForm = ({setToken}) => {
 
     const [login, result] = useMutation(LOGIN)
 
-    useEffect(()=> {
-        console.log(result.data);
-        
+    useEffect(()=> {        
         if(result.data){
             const token = result.data.login.value
             setToken(token)

@@ -33,7 +33,7 @@ const server = new ApolloServer({
         auth.substring(7), JWT_SECRET
       )
       const currentUser = await User
-      .findById(decodedToken.id)
+      .findById(decodedToken.id)      
       return {currentUser}
     }
   }
