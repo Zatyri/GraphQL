@@ -12,30 +12,42 @@ import Recommendations from './components/Recommendations'
 const App = () => {
   const [page, setPage] = useState('authors')
   const [token, setToken] = useState(null)
+  const [books, setBooks] = useState([])
   const result = useQuery(ALL_AUTHORS)
   const client = useApolloClient()
-  const books = useQuery(ALL_BOOKS)
-
-
-  useEffect(()=> {
+  const { loading, error, data, refetch } = useQuery(ALL_BOOKS)
+  
+  useEffect(()=> {    
     const loggedIn = localStorage.getItem('library-user-token')
     if(loggedIn){
       setToken(loggedIn)
     }
   },[])
 
+  useEffect(() => {
+    if(data){
+      setBooks(data.allBooks)      
+    }
+  },[loading, data])
+
   if(result.loading){
     return <div>Loading...</div>
   }
 
-  const pageToShow = () => {
+  const updateBooks = (newBook) => {  
+    refetch()  
+    const bookToAdd = [newBook]
+    setBooks([...books.concat(bookToAdd)])
+  }
+
+  const pageToShow = () => {    
     switch(page){
-      case 'authors':
+      case 'authors':        
         return <Authors authors={result.data.allAuthors} />        
       case 'books':
-        return <Books allBooks={books}/>
+        return <Books allBooks={books} />
       case 'add': 
-        return <NewBook />
+        return <NewBook update={updateBooks}/>
       case 'recommendations':
         return <Recommendations allBooks={books} token={token}/>
       case 'login':

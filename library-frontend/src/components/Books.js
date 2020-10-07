@@ -5,7 +5,7 @@ const Books = ({allBooks}) => {
   const [books, setBooks] = useState([]) 
 
  useEffect(()=>{
-  setBooks(allBooks.data.allBooks)
+  setBooks(allBooks)
  },[allBooks])
 
 
@@ -13,7 +13,7 @@ const Books = ({allBooks}) => {
   
   const mapGenres = () => {
     let returnValue = ['all','no genre']
-    allBooks.data.allBooks.map(book => book.genres.map(genre => 
+    allBooks.map(book => book.genres.map(genre => 
       !returnValue.includes(genre) ? returnValue = returnValue.concat(genre) : null
     ))    
     return returnValue
@@ -25,13 +25,13 @@ const Books = ({allBooks}) => {
     const genre = event.target.value    
     switch(genre){
       case 'all':
-        setBooks(allBooks.data.allBooks)
+        setBooks(allBooks)
         break
       case 'no genre':
-        setBooks(allBooks.data.allBooks.filter(book => book.genres.length === 0))            
+        setBooks(allBooks.filter(book => book.genres.length === 0))            
         break
       default:
-        setBooks(allBooks.data.allBooks.filter(book => book.genres.includes(genre)))
+        setBooks(allBooks.filter(book => book.genres.includes(genre)))
         break
     }
     setSelectedGenre(event.target.value)

@@ -16,13 +16,12 @@ const Recommendations = ({allBooks, token}) => {
             setGenre(data.me.favoriteGenre)
         }
         refetch()
-    },[data])
-
-    console.log(allBooks);
+    },[data, refetch])
+    
     
 
     const recommendations = () => {
-        const books = allBooks.data.allBooks.filter(book => book.genres.includes(genre))
+        const books = allBooks.filter(book => book.genres.includes(genre))
         return (
             <>
                 <p>books in your favorite genre {genre}</p>
