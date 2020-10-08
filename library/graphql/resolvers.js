@@ -3,8 +3,11 @@ const jwt = require('jsonwebtoken')
 const Book = require('../models/book')
 const Author = require('../models/author')
 const User = require('../models/user')
+const { PubSub } = require('apollo-server')
+
 
 const JWT_SECRET = process.env.JWT_SECRET
+const pubsub = new PubSub()
 
 const resolvers = {
     Query: {
@@ -27,35 +30,45 @@ const resolvers = {
     },
     Mutation: {
         addBook: async (root, args, {currentUser}) => {
-            try {                
+              
+                         
             if(!currentUser){
                 throw new AuthenticationError("not authenticated")
             }
+            let book
+            try {               
             const author = await Author.findOne({name: args.author})
             if(!author){
                 const newAuthor = new Author({
                     name: args.author
                 })
                 const addedAuthor = await newAuthor.save()
-                const book = new Book({...args, author: addedAuthor})
+                book = new Book({...args, author: addedAuthor})
                 console.log(`new author ${book}`);
-                
-                return book.save()
+
+               
+
             } else {
-                const book = new Book({...args, author: author})   
+                book = new Book({...args, author: author})   
                 console.log(book);
                          
-                return book.save()
+                
+
             }
+
+            pubsub.publish('BOOK_ADDED', {bookAdded: book})
+                
+            return book.save()
+
             } catch (error) {
                 console.log(error.message);
                 
                 throw new UserInputError(error.message, {
                     invalidArgs: args,
                   })
-            }
-            
+            }            
         },
+       
         addAuthor: (root, args) => {
             try {
       
@@ -115,6 +128,11 @@ const resolvers = {
                 
             }
 
+        }
+    },
+    Subscription: {
+        bookAdded: {
+            subscribe: () => pubsub.asyncIterator(['BOOK_ADDED'])
         }
     }
   }
