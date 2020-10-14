@@ -23,10 +23,12 @@ const resolvers = {
         }
     },
     Author: {
-        bookCount: (root) => {
+        bookCount: (root) => {            
             const count = Book.countDocuments({author: {$in: root._id}})
-            return count
+            return count        
+
         }
+        
     },
     Mutation: {
         addBook: async (root, args, {currentUser}) => {
