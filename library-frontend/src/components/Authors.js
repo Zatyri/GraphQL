@@ -1,16 +1,27 @@
   
 import React, {useState, useEffect } from 'react'
-import {EDIT_AUTHOR} from '../queries'
-import {useMutation} from '@apollo/client'
+import {EDIT_AUTHOR, ALL_AUTHORS} from '../queries'
+import {useMutation, useQuery} from '@apollo/client'
 import BirthYearForm from './BirthYearForm'
 
-const Authors = ({authors}) => {  
+const Authors = ({ update}) => {  
+  const { loading, error, data, refetch } = useQuery(ALL_AUTHORS)
   const [ editAuthor ] = useMutation(EDIT_AUTHOR)  
   const [authorsState, setAuthorsState] = useState([])
 
-  useEffect(()=> {
-    setAuthorsState(authors)
-  },[authors])
+useEffect(() => {
+  if(data){
+    setAuthorsState(data.allAuthors)      
+  }
+},[loading, data])
+
+  useEffect(() => {
+    refetch()   
+  },[update, refetch])
+
+  if(loading){
+    return <div>Loading...</div>
+  }
 
  const updateAuthor = async (name, born) => {
   await editAuthor({variables: {name, born}})
@@ -18,6 +29,9 @@ const Authors = ({authors}) => {
   let newAuthor = {...authorsState[index], born: born}
   setAuthorsState(authorsState.map(author => author.name === name ? newAuthor : author))
 }
+
+
+
 
   return (
     <div>
@@ -42,7 +56,8 @@ const Authors = ({authors}) => {
           )}
         </tbody>
       </table>   
-      <BirthYearForm updateAuthor={updateAuthor} authors={authors}/>   
+      <BirthYearForm updateAuthor={updateAuthor} authors={authorsState}/>  
+      
 
     </div>
   )

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react'
-import {useApolloClient, useQuery} from '@apollo/client'
-import {ALL_AUTHORS, ALL_BOOKS} from './queries'
+import {useApolloClient, useQuery, useSubscription} from '@apollo/client'
+import {ALL_BOOKS, BOOK_ADDED} from './queries'
 import Authors from './components/Authors'
 import Books from './components/Books'
 import NewBook from './components/NewBook'
@@ -13,9 +13,17 @@ const App = () => {
   const [page, setPage] = useState('authors')
   const [token, setToken] = useState(null)
   const [books, setBooks] = useState([])
-  const result = useQuery(ALL_AUTHORS)
+  const [update, setUpdate] = useState(false)
   const client = useApolloClient()
   const { loading, error, data, refetch } = useQuery(ALL_BOOKS)
+
+  useSubscription(BOOK_ADDED, {
+    onSubscriptionData: ({subscriptionData}) => {
+      const addedBook = subscriptionData.data.bookAdded      
+      updateBooks(addedBook)            
+      window.alert(`Book "${addedBook.title}" was added`)
+    }
+  })
   
   useEffect(()=> {    
     const loggedIn = localStorage.getItem('library-user-token')
@@ -30,20 +38,22 @@ const App = () => {
     }
   },[loading, data])
 
-  if(result.loading){
+  if(loading){
     return <div>Loading...</div>
   }
 
   const updateBooks = (newBook) => {  
+    setUpdate(true)
     refetch()  
     const bookToAdd = [newBook]
     setBooks([...books.concat(bookToAdd)])
+    setUpdate(false)
   }
 
   const pageToShow = () => {    
     switch(page){
       case 'authors':        
-        return <Authors authors={result.data.allAuthors} />        
+        return <Authors  update={update}/>        
       case 'books':
         return <Books allBooks={books} />
       case 'add': 
@@ -53,7 +63,7 @@ const App = () => {
       case 'login':
         return <LoginForm setToken={setToken}/>
       default:
-        return <Authors authors={result.data.allAuthors} />
+        return <Authors />
     } 
   }
 

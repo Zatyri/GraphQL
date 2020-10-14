@@ -51,9 +51,6 @@ const resolvers = {
             } else {
                 book = new Book({...args, author: author})   
                 console.log(book);
-                         
-                
-
             }
 
             pubsub.publish('BOOK_ADDED', {bookAdded: book})
